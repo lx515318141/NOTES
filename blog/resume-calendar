@@ -1,0 +1,188 @@
+简历系列
+本系列博客注意记录编写本次简历项目时遇到的一些问题，解决办法，以及使用到的一些工具和方法。
+
+简历系列——日历的制作
+1.主要思路
+制作日历首先需要需要通过 Date() 获取到今天的年月日以及星期几。为了后面方便操作需要通过 new Date().getMonth() 获取到月份的数字，这里月份是从0开始的，所有获取到的月份比实际月份小一,如果现在是5月，获取到的则为4。
+此外我们还需要一些函数和一些对象
+ // 获取当前月份有多少天，此时第二个参数应该为正常月份，即5月就是5，所有month需要加一
+    getOneMonthDays(year, month) {
+      return new Date(year, month + 1, 0).getDate();
+    },
+// 获取当月某一天是周几，此时传入的月份应该是减一的月份
+    getDayOfWeek(year, month, day) {
+      return new Date(year, month, day).getDay();
+    },
+// 月份和星期中英文和数字对应的数组
+dateTable: {
+        enMonth: [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ],
+        cnMonth: [
+          "1月",
+          "2月",
+          "3月",
+          "4月",
+          "5月",
+          "6月",
+          "7月",
+          "8月",
+          "9月",
+          "10月",
+          "11月",
+          "12月",
+        ],
+        enWeek: [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+        ],
+      }
+// 将年月日下标传入可以获得对应的年月日星期的名称
+setDateListItem({ year, month, date, dateTableIndex }) {
+      return {
+        date,
+        year,
+        cnMonth: dateTable.cnMonth[month],
+        enMonth: dateTable.enMonth[month],
+        enWeek: dateTable.enWeek[dateTableIndex],
+      };
+    }
+
+有了上面这些我们就可以进行逻辑判断了：
+        //  获取本月一共有多少天
+        let currentMonthDays = this.getOneMonthDays(today.year, today.numMonth);
+        //  获取本月第一天是星期几
+        let firstDayInCurentMonth = this.getDayOfWeek(
+          today.year,
+          today.numMonth,
+          1
+        );
+        // 因为我写的日历每周是从周日开始的，所有要先判断第一天是周几，不是周一的话用上个月的后几天补齐
+        if (firstDayInCurentMonth !== 0) {
+          // 先判断本月是不是1月，如果是1月，则上个月就是去年的12月
+          let isPreMonth = today.numMonth === 0;
+          // 因为后面用的函数对月份的计算是按数字进行，数字从0开始，到11结束，每月数字都少一所以如果是上一年获取到月份应该为11
+          let preMonth = isPreMonth ? 11 : today.numMonth - 1;
+          let preYear = isPreMonth ? today.year - 1 + '' : today.year;
+          // 获取上个月一共多少天
+          let preMonthDays = this.getOneMonthDays(preYear, preMonth);
+          // 遍历用上个月最后几天补齐本星期的日期，把获取到每天是星期几后把通过 setDateListItem() 把每一条对于信息存到数组中
+          for (let i = firstDayInCurentMonth - 1 ; i >= 0; i--) {
+            let indexP = this.getDayOfWeek(preYear, preMonth, preMonthDays - i);
+            this.data.dateList.push(
+              this.setDateListItem({
+                year: preYear,
+                month: preMonth,
+                date: preMonthDays - i,
+                dateTableIndex: indexP,
+              })
+            );
+          }
+        }
+        // 将本月各天的信息放入数组
+        for (let i = 1; i <= currentMonthDays; i++) {
+          let indexC = this.getDayOfWeek(today.year, today.numMonth, i);
+          this.data.dateList.push(
+            this.setDateListItem({
+              year: today.year,
+              month: today.numMonth,
+              date: i,
+              dateTableIndex: indexC,
+            })
+          );
+        }
+        // 判断本月最后一天是否是周六，如果不是用下个月的前几天补齐,通过判断dateList的length是否是7的倍数来判断
+        let currentDateListLen = this.data.dateList.length;
+        if (currentDateListLen % 7) {
+          let isNextMonth = today.numMonth === 11;
+          let nextMonth = isNextMonth ? 0 : today.numMonth + 1;
+          let nextYear = isNextMonth ? year + 1 : today.year;
+          // 将显著所获得的所有日期数量（包含上个月补齐的几天）除以7，看余数，再用7 - 余数，就可以获得还剩几天可以补齐
+          let diff = 7 - (currentDateListLen % 7);
+          // 最后还是通过遍历补齐的几天，获得信息并存入数组
+          for (let i = 1; i <= diff; i++) {
+            let indexN = this.getDayOfWeek(nextYear, nextMonth, i);
+            this.data.dateList.push(
+              this.setDateListItem({
+                year: nextYear,
+                month: nextMonth,
+                date: i,
+                dateTableIndex: indexN,
+              })
+            );
+          }
+        }
+
+以上是日历制作的主体算法思路，借鉴自
+
+2.拆分数组
+获取到全部日期信息后，为了便于将日期渲染到日历上，需要42个或35个日期信息按每7个一组拆分成多个数组，我使用的方法是while循环法：
+let i = 0;
+let newArrary = [];
+while (i < dateList.length) {
+   newArrary.push(dateList.slice(i, (i += 7)));
+}
+
+3.遇到的问题
+在进行获取全部日期信息这个函数时，我想使用promise，但是使用时发现在 return new Promise(function(resolve, reject) {...}) 在里面的函数无法获取的到外面的this，就无法调用外面数组。
+解决办法：
+1.将里面的函数改为箭头函数。
+return new Promise((resolve, reject) => {...}
+这样里面的元素在调用this时，因为箭头函数没有this，就会一直向上级作用域寻找，直到找到this为止，就可以获取到外卖单this了。
+2.在 return 之前声明一个变量，将this赋给这个变量，
+let _this = this
+在里面的函数中直接调用变量即可。
+
+关于 Object.assign() 是深拷贝还是浅拷贝。
+Object.assign(target, ...sources); // 用于将所有可枚举属性的值从一个或多个源对象复制到目标对象。它将返回目标对象。
+target：目标对象
+sources：源对象
+讲过查找，如果源对象中只有一级属性，即其中的属性值都是基本类型，如string，number等，则为深拷贝；
+如果源对象中存在二级属性，即其中的属性值存在对象，数组或其他引用类型，则为浅拷贝。
+
+另外列举几种深拷贝方法：
+1.JSON.stringify() 与 JSON.parse() 联合使用
+如：let obj = JSON.parse(JSON.stringify(object));
+2.Object.assign()
+如：Object.assign(target, ...sources);
+3.lodash.cloneDeep()
+如：let obj = _.cloneDeep(object);
+注意：
+慎用lodash的cloneDeep函数
+lodash的cloneDeep函数能够很方便的拷贝对象，但是一旦拷贝一些很复杂的对象就有可能报错。比如用cloneDeep克隆一个vue实例，就有可能包key.charAt is not a Function的错。（正确的拷贝方法是Vue.extend()）。一般来说复杂的对象都会内置拷贝方法，使用内置的方法拷贝会比lodash的cloneDeep要安全得多。遇到比较简单的对象我们们应该直接调用clone方法而不是cloneDeep（或者JSON.parse(JSON.stringify(obj))），这样既保险也可以减少性能损耗。
+4.递归的方式实现深拷贝
+如：
+function _deepClone(source) {
+  let target;
+  if (typeof source === 'object') {
+    target = Array.isArray(source) ? [] : {}
+    for (let key in source) {
+      if (source.hasOwnProperty(key)) {
+        if (typeof source[key] !== 'object') {
+          target[key] = source[key]
+        } else {
+          target[key] = _deepClone(source[key])
+        }
+      }
+    }
+  } else {
+    target = source
+  }
+  return target
+}

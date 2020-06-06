@@ -1,0 +1,64 @@
+简历系列
+本系列博客注意记录编写本次简历项目时遇到的一些问题，解决办法，以及使用到的一些工具和方法。
+
+简历系列——常用api
+本篇博客会整理一些编写本次项目时用到的一些api，以及相关同类型的api，其中包括jQuery api 和 DOM api。
+一、jquery判断一个元素是否包含一个确定的类(class)，两种方法：
+1.hasClass('classname')。(注意jquery的低版本可能是hasClass('.classname'))
+例:  $('div').hasClass('redColor')
+2.is(‘.classname’)
+例：$('div').is('.redColor')
+
+二、jquery获取元素的父节点，子节点，兄弟节点
+$("#test1").parent(); // 获取父节点
+$("#test1").parents(); // 全部祖先元素，
+$("#test1").parents(".mui-content");//返回class为mui-content的父节点
+$("#test1").children(); // 全部子节点
+$("#test1").children("#test1"); //返回id为test1的子节点
+$("#test1").contents(); // 返回id为test里面的所有内容，包括节点和文本
+$("#test1").contents("#test1"); //返回id为test里面的id为#test1的节点和文本
+$("#test1").prev();  // 上一个兄弟节点
+$("#test1").prevAll(); // 之前所有兄弟节点
+$("#test1").next(); // 下一个兄弟节点
+$("#test1").nextAll(); // 之后所有兄弟节点
+$("#test1").siblings(); // 所有兄弟节点
+$("#test1").siblings("#test2"); // 返回id为test2的兄弟节点
+$("#test").find("#test1"); // 选中id为test后代中 id为test1的节点
+
+三、DOM/jQuery获取元素内容和属性
+1.获取内容：
+DOM:
+element.innerHTML(); // 设置或获取标签所包含的HTML+文本信息(从标签起始位置到终止位置全部内容，包括HTML标签，但不包括自身)
+element.innerText(); // 设置或获取标签所包含的文本信息（从标签起始位置到终止位置的内容，去除HTML标签，但不包括自身）
+jQuery:
+$("#test").text(); // 设置或返回所选元素的文本内容
+$("#test").html();// 设置或返回所选元素的内容（包括 HTML 标记）
+$("#test").val(); // 设置或返回表单字段的值
+DOM:
+a.getAttribute("href") // 返回指定属性名的属性值，括号内输入需要获取属性值的属性名
+jQuery:
+$('a').attr() // 设置或返回被选元素的属性值
+设置：$('a').attr("href")
+获取：$('img').attr("width", "100px")
+
+四、从数组或字符串中截取选定的元素
+1.substring()
+stringObject.substring(strat, stop); // 方法用于提取字符串中介于两个指定下标之间的字符。（包前不包后）
+start：必选，一个非负的整数，规定要提取的子字符串的第一个字符在 stringObject 中的位置。子字符串将包含此下标对应的字符。
+stop：可选，一个非负的整数，比要提取的子字符串的最后一个字符在 stringObject 中的位置多 1。如果省略该参数，那么返回的子串会一直到字符串的结尾。
+
+2.substr()
+stringObject.substr(start,length); // 方法可在字符串中抽取从 start 下标开始的指定数目的字符。
+start：必选，要抽取的子字符串的起始下标。必须是数值。如果是负数，那么该参数声明从字符串的尾部开始算起的位置。即-1 指字符串中最后一个字符，-2 指倒数第二个字符，以此类推。
+length：可选，子字符串中的字符数。必须是数值。如果省略了该参数，那么返回从 stringObject 的开始位置到结尾的字串。
+
+3.substr()
+arrayObject.slice(start,end); // 方法可从已有的数组中返回选定的元素；也可用来截取字符串中的子字符串。
+start：必选。规定从何处开始选取。如果是负数，那么它规定从数组尾部开始算起的位置。即-1 指最后一个元素，-2 指倒数第二个元素，以此类推。
+end：可选。规定从何处结束选取。该参数是数组片断结束处的数组下标。如果没有指定该参数，那么切分的数组包含从 start 到数组结束的所有元素。如果这个参数是负数，那么它规定的是从数组尾部开始算起的元素。
+
+三、其他
+$("div").empty(); // 方法移除被选元素的所有子节点和内容。
+stringObject.replace(regexp/substr,replacement); // 用于在字符串中用一些字符替换另一些字符，或替换一个与正则表达式匹配的子串。
+regexp/substr：目标字符或正则表达式。
+replacement：要替换上去的字符。
