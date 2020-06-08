@@ -1,0 +1,306 @@
+一、CSS的学习思路
+1.CSS不成交
+a.margin合并
+当两个兄弟元素都要margin，则会发生margin合并，若两元素的margin一样，则两元素之间的间隔为一个margin大小，若两元素的margin不一样，则两元素之间的间隔为较大的margin的大小。
+消除方法：在两元素中间插入一个元素，给该元素加上一个border，大小为0.1px。给该元素加上一个display：table或flex，都可以消除margin合并。
+父子元素之间也会出现margin合并，没有border，而子元素margin有，则子元素的上下margin不会出现在父元素内，而是出现上下margin合并的情况。若父子都有border，则子元素会在父元素内出现margin，但父元素大小不变。
+消除方法：给父元素加border，或给父级元素加padding，或给父级元素加overflow:hidden(不推荐)。只要让子元素的边界不和父元素的边界直接接触，即让两者的边界中间有东西间隔，就不会发生margin合并。
+b.li的小圆点和display
+li是自带小圆点的，但是如果给li加上除display：list-item之外的display属性，li的小圆点就会消失。
+c.position改变display
+当一个元素的display是inline或inline-block时，如果同时存在position：absolute，display会被自动改成block
+d.transform影响display：fixed
+当一个元素具有display：fixed时，该元素相对于窗口定位，但是如果他的父级元素出现transform：scale（0.9）（缩放0.9倍）时，子元素就会变成相对于父元素定位。
+e.float影响下面的元素中的文字
+当一个父级元素存在两个子元素时，其中一个添加了float：left时，此元素会浮在它的兄弟元素上面，但是如果它的兄弟元素里存在文字，文字会自动跑到float元素周边。
+2.CSS的一些套路
+a.布局：PC：IE8：用float布局
+                   Chrome：用flex布局
+            Mobile：用flex布局
+b.居中：水平居中：块级元素：当子元素宽度不确定时：给其左右各一个固定的margin
+                                            当子元素宽度确定时：给一个margin-left：auto；和margin-right：auto；
+                            内联元素：给其父级元素一个text-align：center；给它一个display：inline或inline-block
+             垂直居中：七种居中方式，主要是炫技，主要使用的只有两三种。当父元素高度不确定是，子元素高度无论确不确定，加padding-top和padding-bottom就可以；父级元素高度确
+		定，IE8用table，Chrome和mobile用flex。（尽量不要把高度写死，一旦把高度写死，再去让其子元素垂直居中，就会很麻烦。可以先确定你要达到的高度，然后给这		个元素加padding来达到那个高度）
+3巧用CSS工具：CSS 3 Generator。可以帮你造css代码。
+（多看张鑫旭的博客）
+
+
+
+二、CSS的高度和宽度
+1.高度
+a.块级元素的高度由其内部文档流的高度总和决定。
+每个字体都有自己的默认行高，写在字体文件里面，一般是字体大小的几点几倍。所有当块级元素入div里面没有文字或元素时，高度是0，当里面有文字时高度就是行数*行高。也可以通过line-height自行设置行高。当通过line-height自行设置行高之后，行高就不会随字体大小变化了。
+想在一个div内两个字之间显示两个空格，需要在两个字之间加上两个&nbsp；（表示不换行的空格）。
+div中文字之外的看不见的字符，如空格，回车，在页面中不显示。
+两个inline或inline-block之间如果存在任何看不见的分隔符号如回车，tab，空格，换行都会在页面中显示为一个空格。
+两字与四字对其：
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>JS Bin</title>
+  <style>
+   div{
+     border:1px solid red;
+   }
+    span{
+      display: inline-block;
+      width:5em;
+      text-align: justify;
+      height: 20px;
+      overflow:hidden;
+    }
+    span::after{
+      content:'';
+      display: inline-block;
+      width:100%;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <span>姓名</span> <br>
+    <span>联系方式</span>
+  </div>
+  
+</body>
+</html>
+让div中的多行文字显示在一行，且超出部分用省略号显示
+white-space:nowrap;//让div中的文字不换行
+over-flow:hidden;//超出部分不显示
+text-overflow:ellipsis;//文本超出部分显示为省略号
+div多行文本省略号，搜索：css multi line text ellipsis(多行文本省略号的英文)
+display: -webkit-box;
+-webkit-line-clamp:2;//指定省略号显示在第几行结尾
+-webkit-box-orient:vertical;
+overflow:hidden;（此方法不兼容IE）
+border会占据空间，把border换成outline，其他不会，就不会占据空间
+让一个div中的子div绝对居中
+父子元素高度不固定时：
+给父元素加一个上下一致的padding，给子元素加margin:0 auto;
+父子元素高度都固定时：
+给父元素box-sizing: border-box; 给子元素margin: auto; position: absolute;top:0;bottom:0;left:0;right:0;一个固定的高度和宽度
+父元素高度固定，子元素高度不固定时：
+给父元素box-sizing: border-box;display: flex;justify-content: center;align-item: center;
+
+
+
+三、堆叠上下文
+div中各层级顺序（从低到顶）：
+父div的background，border，子div的background，父div的内容/文字，子div的内容/文字
+（文档流中后出现的在先出现的上面）；如果存在浮动元素（即有float属性），则浮动元素在子div的background和父div的文字之间；若浮动元素有文字，则文字也在父div的文字下面；如果让子元素相对定位，即加上position：relative，则他会跑到父div的文字的上面。
+z-index可以设置元素的层级，数值越大，层级越高，但是他只可以给定位元素设置层级（position不是static的都是定位元素）。定位元素的z-index默认是auto，可以认为是0，当同时存在两个定位元素的时候，后出现的在先出现的上面，若想让先出现的在上面，就让他的z-index大于0。绝对定位与相对定位一样，后出现在上，如果想改变，就修改z-index。
+在父div没有定位的情况下，给一个定位子元素的z-index变成负的，这个定位元素就会跑到父div的background下面。
+如果父div定位了，且让父div的z-index为0，则子元素中的负z-index就会出现在父div的background和border上面。
+核心是记住实验方法而不是结论。
+假设a和a的子元素，b和b的子元素都是堆叠上下文，若b的z-index比a大，则b子元素中的堆叠上下文都比a和a子元素中的堆叠上下文要高。
+堆叠上下文可以理解为堆叠作用域。跟 BFC 一样，我们只知道一些属性会触发堆叠上下文，但并不知道堆叠上下文是什么。
+满足下列条件就是堆叠上下文
+1.根元素 (HTML),
+2.z-index 值不为 "auto"的 绝对/相对定位，
+3.一个 z-index 值不为 "auto"的 flex 项目 (flex item)，即：父元素 display: flex|inline-flex，
+4.opacity 属性值小于 1 的元素（参考 the specification for opacity），
+5.transform 属性值不为 "none"的元素，
+6.mix-blend-mode 属性值不为 "normal"的元素，
+7.filter值不为“none”的元素，
+8.perspective值不为“none”的元素，
+9.isolation 属性被设置为 "isolate"的元素，
+10.position: fixed
+11.在 will-change 中指定了任意 CSS 属性，即便你没有直接指定这些属性的值（参考 这篇文章）
+12.-webkit-overflow-scrolling 属性被设置 "touch"的元素
+
+
+
+四、icon全解
+制作icon的几种方法：
+1.img 法
+2.background 法
+3.background 合一法
+4.font 法
+5.SVG 法
+6.新手慎用：「CSS 就是干」法
+
+要学会使用Photoshop的一些工具，如：一张图中有多个图层，导出其中一个图层：在右侧选中该图层，右键复制图层。然后在上面工具栏的图片里面的裁剪，就可以了，最后导出。
+1.img法：将icon作为img引入页面，只设置宽或高就可以，不需要同时设置，图片会自动保持原比例不变，如果同时设置了宽高，且不一致，则就导致图片变形。
+2.background法：与img类似，将icon作为div的背景引入，在background里加上一个url(路径)一般还要加上no-repeat 0 0，或直接用background-img：url(路径)。好处是当div的宽高不一致时图片不会变形。
+3.background 合一法（也叫雪碧图法，其实应该叫精灵图）
+一般不自己做，在直接搜索css sprite generator，使用生成器，将需要制作icon的图片上传到生成器，然后按要求设置，就可以直接生成一个大图和css、html代码，然后直接复制就可以了。（大致原理：生成器会将上传的多个图合成一个大图，每个div里都是这个大图，然后在通过移动图片位置，让你需要的图片显示出来，因为有overflow：hidden，所有其他不需要的图片看不到）
+4.font 法（可以了解一下HTML的字符实体）
+icon的使用帮助里有说明。
+5.SVG 法（目前的主流方法）
+icon的使用帮助里有说明。svg支持style，不会变形，因为是矢量图，所有放大也不会有锯齿。非彩色的icon可以通过在style里面设置fill改变颜色，如果是彩色的就不可以。还可以描边，还可以添加滤镜，还可以支持渐变，还可以做动画。
+6.新手慎用：「CSS 就是干」法
+纯用css画icon，不需要其他的东西。可以搜索css icon。
+
+
+
+五、移动端页面
+响应式技术就是媒体查询（现在几乎没有网站会使用响应式）。
+1.媒体查询
+两种实现方式：
+a.写在style里。
+<style>
+        @media(max-width: 320px) {
+            body {
+                background: red;
+            }
+        }
+</style>
+@media(xxx){}是一个选择器，当满足括号内条件时花括号内代码生效。可以同时储存多个媒体，不影响性能，但如果各媒体查询的条件类似，如
+@media(max-width: 320px) {
+/*媒体查询条件为最大宽度为320px(即宽度是0~320px)时执行下面代码，*/
+            body {
+                background: red;
+            }
+        }
+和
+@media(max-width: 400px) {
+            body {
+                background: green;
+            }
+        }
+当同时存在这两个媒体查询时则会发生相互覆盖，谁写在后面谁的优先级高，下面的条件又包含上面的条件，之前的就会被覆盖，所有当宽度为0~320px时上面的也不会显示。
+解决方法：①如上面的两端代码，将范围小的写在下面，范围大的写在上面就可以了。
+                ②将条件写的更加准确，(max-dieth: 320px) and (max-width: 400)，这样就会好发生相互覆盖了
+b.写在link里面，如：<link rel="stylesheet" href="style.css" media="(max-width: 320px)">当满足媒体查询条件时link中引入的css才生效。
+现在的网站直接做两个网站或两个HTML，用手机访问时打开一个网站或HTML，用PC访问打开另一个网站或HTML。
+2.手机端要加一个 meta
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+3手机端的交互方式不一样
+a.没有 hover
+b.有 touch 事件(手机端不会触发lick事件，也没有滑动事件，但是可以通过touch事件模拟滑动事件，有已经封装好的如：jQuery swipe，Vue swipe)
+c.没有 resize
+d.没有滚动条
+
+
+
+六、flex
+1.flex出现之前用什么布局
+a.normal flow (正常流，也叫文档流)
+b.float + clear
+c.position relative + position absolute
+d.display inline-block
+e.负margin
+2.Flex一种新的布局方式
+a.块级布局侧重垂直方向、行内布局侧重水平方向，flex布局是与方向无关的。
+b.flex布局可以实现空间自动分配、自动对齐（flexible：弹性、灵活）
+c.flex适用于简单的线性布局，更复杂的布局要交给grid布局。
+3.Flex的一些基本概念
+a.主轴：沿着子元素方向的轴
+b.侧轴：垂直子元素方向的轴
+c.主尺寸：主轴起点到主轴终点的距离
+d.侧尺寸：侧轴起点到侧轴终点的距离
+e.父元素叫flex container
+f.子元素叫flex item
+4.flex container的属性
+a.flex-direction: 方向，可水平，可垂直
+b.flex-warp：换行
+c.flex-flow：上面两个的缩写
+d.justify-content：主轴方向对齐方式
+e.align-items：侧轴方向对齐方式
+f.align-content：多行/多列内容对齐方式（使用较少）
+5.flex item的属性
+a.flex-grow：增长比例（空间过多时，多出的空间会按照，每个子元素flex-grow的数值分配）
+b.flex-shrink：收缩比例（空间不足时）
+c.flex-basis：默认大小（一般不用）
+d.flex：前三个的缩写，该属性有两个快捷值：auto (1 1 auto) 和 none (0 0 auto)。
+e.order：顺序（代替双飞翼）
+f.align-self：自身的对齐方式，默认值为auto，表示继承父元素的align-items属性，如果没有父元素，则等同于stretch。
+
+
+
+七、布局套路
+两种可选：float和flex
+原则：不到万不得已，不要写死 width 和 height(可以用百分比和加减几px来写)。
+          尽量用高级语法，如 calc、flex。
+          如果是 IE，就全部写死。
+          不要乱加属性，一个div只负责一个功能，或布局，或内容，不用混着用。
+1.float（如果需要兼容IE8）
+口诀：a.子元素全加 float: left （right）
+          b.父元素加 .clearfix
+如果页面里面有图片需要展示，手机端和PC端因宽度不一致会发生变形。
+解决方法：图片不要用img展示，使用background: transparent url(图片路径) no-repeat center；
+如果不想因为图片宽度变小导致图片显示不全，就再加一个background-size：cover；
+如果想显示固定比例的图片，可以去搜索：固定比例div
+
+
+
+八、BFC
+BFC（block formatting content，块级格式化上下文），没有任何情况是一定需要使用BFC的，都可以用其他方法代替。
+1.BFC触发条件：根元素或其它包含它的元素
+	        浮动元素 (元素的 float 不是 none)
+	        绝对定位元素 (元素具有 position 为 absolute 或 fixed)
+	        内联块 (元素具有 display: inline-block)
+	        表格单元格 (元素具有 display: table-cell，HTML表格单元格默认属性)
+	        表格标题 (元素具有 display: table-caption, HTML表格标题默认属性)
+	        具有overflow 且值不是 visible 的块元素，
+	        display: flow-root（新出的一个属性，只用于触发BFC，没有其他功能，但因为是新出的很多浏览器还不支持）
+	        column-span: all
+2.功能：a.用BFC包住浮动元素。当子元素浮动时，给父元素添加上述属性，即可触发BFC，让父元素包住子元素。
+            b.让两个相邻的兄弟元素接线分明，如：当一个元素浮动时，给其兄弟元素添加上述属性，即可触发BFC，让他们两个接线分离
+
+
+
+九、动态REM
+手机专用的自适应方案
+CSS中的各种单位：px（像素）、em（一个M的宽度，或一个汉字的宽度）、rem（root em，根元素的font-size的大小）、vh（viewport height，100vh===视口高度）、vw（viewport width，100vw===视口宽度）
+1.rem和em的区别
+页面的默认font-size是16px，Chrome默认字体最小像素是12px。
+rem指根元素的font-size的大小，根元素是HTML，在不设置根元素的font-size时，默认font-size为16px，所以1rem为16px；若设置了根元素的font-size，则1rem为设置之后根元素的font-size。
+em指一个M的宽度或高度，也可以理解为1em===font-size，但是这个font-size是自身的font-size，而不是根元素的。
+区别：rem指根元素的font-size，em指自身的font-size。
+2.在给手机做页面时，会有一个问题，各种手机屏幕的宽高不一样，所有页面中各元素的宽高无法确定。
+解决方法：a.按比例写宽度；但是存在问题，高度仍无法确定。
+                b.按比例缩放（一切单位以页面宽度为准，就能保住完美还原设计）
+	   用JS将HTML的font-size和页面宽度关联起来，就可以间接性的让rem和页面宽度关联起来。
+	   var pageWidth = window.innerWidth;   //将屏幕宽度赋给pageWidth
+	   document.write('<style>html{ font-size:' + pageWidth/10 + 'px;}</style>')   //再让HTML的font-size等于屏幕宽度或屏幕宽度的十分之一。
+	   此时1rem就是一个屏幕宽度或一个屏幕宽度的十分之一。如果需要指定的某些储存特别小，比如border，就不要用rem了，可以和px混着用。
+3.使用rem每次写宽度的时候都要去计算一遍rem，很麻烦，所有可以使用sass自动将px换算成rem
+
+
+
+十、表单美化
+1.使用css需要借助很多工具和网站
+a.搜索caniuse，这个网站会告诉你这个css属性哪些浏览器兼容，哪些不兼容。
+
+
+
+十一、BootStrap
+谷歌搜索BootStrap，可以找到它的官网，或谷歌搜索BootStrap中文，可以找到它的中文翻译网站。
+栅格系统或网格系统：以规则的网格阵列来指导和规范网页中的版面布局以及信息分布。
+在使用bootstrap的栅格布局时，class为row的div不能不要，他有左右-15px的margin，可以让这个行左右各宽15px，从而使里面的各个div变宽。
+使用bootstrap时，只要抄文档上的代码就好，不要自己写多余的代码。如果实在对样式不满意，不要在原标签上修改，可以自己在要修改的元素外面再加一个div，对这个div进行样式修改。
+直接修改原div的样式可能导致样式之间相互覆盖。
+因为div只有一个默认样式就是display：block，所有经常拿来做布局，其他标签都更多的默认样式，如果拿来做布局要写更多的css来清除默认样式。
+
+
+
+十二、IFC
+IFC（inline formatting content，块级格式化上下文）
+字体常识：我们平时用的font-size，指的是用于盛放文字的一个容器（一个正方形的方框）高度，可以理解为活字印刷时，每个刻字的方块的大小。
+line-height可以指定一个内联元素的真实占位高度。可以通过设置行高让文字水平居中，同一行文字是以字体的基线对齐的，如果一行文字，存在多种字体，但是各字体的大小和行高一致，可能会导致这一行文字的占位高度发生变化，因为字体间以行高对齐，不同字体行高不一致，会导致一些字体上浮或下沉会使这一行文字的占位高度发生变化。
+line-box（行盒）：行盒的高度是由它所有子元素的高度计算得出的。
+vertical-align是一个不靠谱的属性，尽量不要用。
+img是inline-block，也是inline元素，如果一个元素中只有一个inline元素，他也会进行对齐，它会和它父级元素内默认字体的基线对齐。所有当一个div中只存在一个img时，img下面会出现一条空隙，想要消除这条空隙就可以使用vertical-align了，也可以将img的display改成block（第二种方法可能会引起bug）。
+如果想让一行中不同字体的两个元素对齐，或两个元素中间有空隙，可以用display：flex或float。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
